@@ -26,6 +26,9 @@ describe('Auth API', () => {
     const res = await request(app).post('/api/register').send(testUser);
     // 201 or 409 if already exists
     expect([201, 409]).toContain(res.statusCode);
+    if (res.statusCode === 201) {
+      expect(res.body.role).toBe('member');
+    }
   });
 
   it('POST /api/register should fail if user already exists', async () => {
@@ -39,6 +42,15 @@ describe('Auth API', () => {
     const res = await request(app).post('/api/login').send(testUser);
     expect(res.statusCode).toBe(200);
     expect(res.body.token).toBeDefined();
+    expect(res.body.role).toBe('member');
+  });
+
+  it('POST /api/login should return admin role for admin user', async () => {
+    // sandra is pre-seeded as admin in users.json
+    const res = await request(app).post('/api/login').send({ username: 'sandra', password: 'sandra' });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.token).toBeDefined();
+    expect(res.body.role).toBe('admin');
   });
 
   it('POST /api/login should fail with wrong password', async () => {
